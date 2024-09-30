@@ -1,0 +1,110 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-commerce Inventory Management</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: antiquewhite;
+      }
+
+      #dataTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      #dataTable th,
+      #dataTable td {
+        border: 2px solid #ddd; /* Border color */
+        padding: 8px;
+        text-align: left;
+      }
+
+      #dataTable th {
+        background-color: #f2f2f2; /* Header background color */
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>E-commerce Inventory Management</h1>
+    <!-- Add a textbox for the query -->
+    <label for="queryInput">Enter SQL Query:</label><br /><br />
+    <input
+      type="text"
+      id="queryInput"
+      size="50"
+      placeholder="e.g., SELECT * from tablename"
+    /><br /><br />
+    <button onclick="fetchDataAndPopulateTable()">Submit Query</button>
+
+    <div id="tableContainer">
+      <!-- Table will be dynamically generated here -->
+    </div>
+
+    <script>
+      // Function to fetch data from the server based on the query and dynamically create the table
+      async function fetchDataAndPopulateTable() {
+        const queryInput = document.getElementById("queryInput");
+        const query = queryInput.value.trim();
+
+        if (!query) {
+          alert("Please enter a valid SQL query.");
+          return;
+        }
+
+        const response = await fetch(
+          `/api/data?query=${encodeURIComponent(query)}`
+        );
+        const data = await response.json();
+
+        // Dynamically generate the table structure
+        const tableContainer = document.getElementById("tableContainer");
+        tableContainer.innerHTML = "";
+
+        if (data.length === 0) {
+          tableContainer.innerHTML = "<p>No results found.</p>";
+          return;
+        }
+
+        const table = document.createElement("table");
+        table.setAttribute("id", "dataTable");
+
+        // Create the table header based on the columns in the result set
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+
+        Object.keys(data[0]).forEach((column) => {
+          const th = document.createElement("th");
+          th.textContent = column;
+          headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create the table body and rows
+        const tbody = document.createElement("tbody");
+        data.forEach((rowData) => {
+          const row = document.createElement("tr");
+
+          Object.values(rowData).forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+          });
+
+          tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        tableContainer.appendChild(table);
+      }
+    </script>
+  </body>
+</html>
